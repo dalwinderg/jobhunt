@@ -19,8 +19,10 @@ import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
+import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -39,8 +41,7 @@ public class Edit_EducationFragment extends Fragment implements View.OnClickList
     private TextView tv_btnnext;
     private ProgressBar progressBar;
 
-    private String editEducation="http://103.230.103.142/jobportalapp/job.asmx/EditCandidateEducationalDetails";
-    private String getcandidatedetail="http://103.230.103.142/jobportalapp/job.asmx/GetCandidateDetails";
+
 
 
     @Override
@@ -70,65 +71,71 @@ public class Edit_EducationFragment extends Fragment implements View.OnClickList
     }
 
     private void getCandidateDetals(final String email){
+        RequestQueue requstQueue = Volley.newRequestQueue(getActivity());
+        Map<String,String> hashMap = new HashMap<String, String>();
+        hashMap.put("sessionId",GlobalDetails.sessionId);
+        JsonObjectRequest jsonobj = new JsonObjectRequest(Request.Method.POST, GlobalDetails.mainUrl+"/Api/v1/User/Android/en/geteducationdetails",new JSONObject(hashMap),
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
 
-        StringRequest stringRequest=new StringRequest(Request.Method.POST, getcandidatedetail, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                try {
-                    JSONObject jsonObject=new JSONObject(response);
-                    JSONObject jsonObject2=jsonObject.getJSONObject("CandidateDetails");
-                    String email=jsonObject2.getString("email");
-                    String university=jsonObject2.getString("uname");
-                    String college=jsonObject2.getString("iname");
-                    String cyoc=jsonObject2.getString("poy");
-                    String cper=jsonObject2.getString("percentage");
-                    String tboard=jsonObject2.getString("tboard");
-                    String tschool=jsonObject2.getString("tschool");
-                    String tyoc=jsonObject2.getString("tpoy");
-                    String tper=jsonObject2.getString("tpercentage");
-                    String mboard=jsonObject2.getString("mboard");
-                    String mschool=jsonObject2.getString("mschool");
-                    String myoc=jsonObject2.getString("mpoy");
-                    String mper=jsonObject2.getString("mpercentage");
+                        try {
+                            JSONObject jsonObject=new JSONObject(response.toString());
+                            String success=jsonObject.getString("code");
+                            System.out.println(""+jsonObject);
+                            if(success.equals("S00"))
+                            {
+                                et_university.setText(jsonObject.getJSONObject("details").getString("cluniversity"));
+                                et_college.setText(jsonObject.getJSONObject("details").getString("clcollege"));
+                                et_cyoc.setText(jsonObject.getJSONObject("details").getString("clyearcompletion"));
+                                et_cper.setText(jsonObject.getJSONObject("details").getString("clpercentage"));
 
+                                et_12board.setText(jsonObject.getJSONObject("details").getString("plusboard"));
+                                et_12school.setText(jsonObject.getJSONObject("details").getString("plusschool"));
+                                et_12yoc.setText(jsonObject.getJSONObject("details").getString("plusboardyearcompletion"));
+                                et_12per.setText(jsonObject.getJSONObject("details").getString("pluspercentage"));
 
-                    et_university.setText(university);
-                    et_college.setText(college);
-                    et_cyoc.setText(cyoc);
-                    et_cper.setText(cper);
-                    et_12board.setText(tboard);
-                    et_12school.setText(tschool);
-                    et_12yoc.setText(tyoc);
-                    et_12per.setText(tper);
-                    et_10board.setText(mboard);
-                    et_10school.setText(mschool);
-                    et_10yoc.setText(myoc);
-                    et_10per.setText(mper);
+                                et_10board.setText(jsonObject.getJSONObject("details").getString("board"));
+                                et_10school.setText(jsonObject.getJSONObject("details").getString("school"));
+                                et_10yoc.setText(jsonObject.getJSONObject("details").getString("boardyearcompletion"));
+                                et_10per.setText(jsonObject.getJSONObject("details").getString("percentage"));
 
+                            }
+                            else{
 
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Log.d("logcheck",""+e);
+                            progressBar.setVisibility(View.GONE);
+
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        progressBar.setVisibility(View.GONE);
+                        Log.d("logcheck",""+error);
+                    }
                 }
+        ){
 
-            }
-        }, new Response.ErrorListener() {
             @Override
-            public void onErrorResponse(VolleyError error) {
-
-
-
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String,String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/json; charset=UTF-8");
+                params.put("Authorization", "Basic c2VydmljZW1hbmR1OnNlcnZpY2VtYW5kdUAyMDIw");
+                return params;
             }
-        }){
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                HashMap<String,String> hashMap=new HashMap<>();
-                hashMap.put("email",email);
-                return hashMap;
-            }
+            //here I want to post data to sever
         };
-        Volley.newRequestQueue(getActivity()).add(stringRequest);
+        requstQueue.add(jsonobj);
 
     }
+
+
+
 
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -142,10 +149,12 @@ public class Edit_EducationFragment extends Fragment implements View.OnClickList
             String college=et_college.getText().toString();
             String cyoc=et_cyoc.getText().toString();
             String cper=et_cper.getText().toString();
+
             String tboard=et_12board.getText().toString();
             String tschool=et_12school.getText().toString();
             String tyoc=et_12yoc.getText().toString();
             String tper=et_12per.getText().toString();
+
             String mboard=et_10board.getText().toString();
             String mschool=et_10school.getText().toString();
             String myoc=et_10yoc.getText().toString();
@@ -177,53 +186,75 @@ public class Edit_EducationFragment extends Fragment implements View.OnClickList
 
     }
 
-    private void editCandidateDetails(final String email, final String university, final String college, final String cyoc, final String cper, final String tboard, final String tschool, final String tyoc, final String tper, final String mboard, final String mschool, final String myoc, final String mper){
+    private void editCandidateDetails(final String email, final String university, final String college, final String cyoc, final String cper,
+                                      final String tboard, final String tschool, final String tyoc, final String tper, final String mboard, final String mschool, final String myoc, final String mper){
 
-        StringRequest stringRequest=new StringRequest(Request.Method.POST, editEducation, new Response.Listener<String>() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
+        RequestQueue requstQueue = Volley.newRequestQueue(getActivity());
+        Map<String,String> hashMap = new HashMap<String, String>();
+        hashMap.put("sessionId",GlobalDetails.sessionId);
+        hashMap.put("cluniversity",university);
+        hashMap.put("clcollege",college);
+        hashMap.put("clyearcompletion",cper);
+        hashMap.put("clpercentage",cper);
+
+        hashMap.put("plusboard",tboard);
+        hashMap.put("plusschool",tschool);
+        hashMap.put("plusboardyearcompletion",tyoc);
+        hashMap.put("pluspercentage",tper);
+
+        hashMap.put("board",mboard);
+        hashMap.put("school",mschool);
+        hashMap.put("percentage",myoc);
+        hashMap.put("boardyearcompletion",mper);
+
+
+        JsonObjectRequest jsonobj = new JsonObjectRequest(Request.Method.POST, GlobalDetails.mainUrl+"/Api/v1/User/Android/en/updateeducationdetails",new JSONObject(hashMap),
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+
+                        try {
+                            Log.d("show"," "+response);
+                            Toast toast=new Toast(getActivity());
+                            toast.setDuration(Toast.LENGTH_LONG);
+                            toast.setGravity(Gravity.BOTTOM|Gravity.FILL_HORIZONTAL,0,0);
+
+                            LayoutInflater inf=getActivity().getLayoutInflater();
+
+                            View layoutview=inf.inflate(R.layout.custom_toast,(ViewGroup)getActivity().findViewById(R.id.CustomToast_Parent));
+                            TextView tf=layoutview.findViewById(R.id.CustomToast);
+                            tf.setText("Details Updated Sucessfully "+ Html.fromHtml("&#x1f604;"));
+                            toast.setView(layoutview);
+                            toast.show();
+                            progressBar.setVisibility(View.GONE);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Log.d("logcheck",""+e);
+                            progressBar.setVisibility(View.GONE);
+
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d("show",""+error);
+                        progressBar.setVisibility(View.GONE);
+                    }
+                }
+        ){
+
             @Override
-            public void onResponse(String response) {
-                Log.d("show"," "+response);
-                Toast toast=new Toast(getActivity());
-                toast.setDuration(Toast.LENGTH_LONG);
-                toast.setGravity(Gravity.BOTTOM|Gravity.FILL_HORIZONTAL,0,0);
-
-                LayoutInflater inf=getActivity().getLayoutInflater();
-
-                View layoutview=inf.inflate(R.layout.custom_toast,(ViewGroup)getActivity().findViewById(R.id.CustomToast_Parent));
-                TextView tf=layoutview.findViewById(R.id.CustomToast);
-                tf.setText("Details Updated Sucessfully "+ Html.fromHtml("&#x1f604;"));
-                toast.setView(layoutview);
-                toast.show();
-                progressBar.setVisibility(View.GONE);
-
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String,String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/json; charset=UTF-8");
+                params.put("Authorization", "Basic c2VydmljZW1hbmR1OnNlcnZpY2VtYW5kdUAyMDIw");
+                return params;
             }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.d("show",""+error);
-                progressBar.setVisibility(View.GONE);
-            }
-        }){
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                HashMap<String,String> hashMap=new HashMap<>();
-                hashMap.put("email",email);
-                hashMap.put("uname",university);
-                hashMap.put("iname",college);
-                hashMap.put("poy",cyoc);
-                hashMap.put("percentage",cper);
-                hashMap.put("tboard",tboard);
-                hashMap.put("tschool",tschool);
-                hashMap.put("tpoy",tyoc);
-                hashMap.put("tpercentage",tper);
-                hashMap.put("mboard",mboard);
-                hashMap.put("mschool",mschool);
-                hashMap.put("mpoy",myoc);
-                hashMap.put("mpercentage",mper);
-                return hashMap;
-            }
+            //here I want to post data to sever
         };
-        Volley.newRequestQueue(getActivity()).add(stringRequest);
+
+        requstQueue.add(jsonobj);
     }
 }

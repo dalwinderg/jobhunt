@@ -24,7 +24,7 @@
         android:id="@+id/IV_logoText"
         android:layout_width="260dp"
         android:layout_height="120dp"
-        android:src="@drawable/jobvibe"
+        android:src="@drawable/logo1"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="30dp" />
 

@@ -4,6 +4,7 @@ package brdevelopers.com.jobvibe;
 import android.app.DatePickerDialog;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.os.ConditionVariable;
@@ -16,6 +17,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
@@ -29,8 +31,10 @@ import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
+import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -53,10 +57,7 @@ public class Edit_PersonalFragment extends Fragment implements View.OnClickListe
     private ProgressBar progressBar;
 
 
-    private String degreeUrl="http://103.230.103.142/jobportalapp/job.asmx/GetCourse";
-    private String fosUrl="http://103.230.103.142/jobportalapp/job.asmx/GetBranch";
-    private String editcandidate="http://103.230.103.142/jobportalapp/job.asmx/EditCandidatePersonalDetails";
-    private String getcandidatedetail="http://103.230.103.142/jobportalapp/job.asmx/GetCandidateDetails";
+
 
 
     @Override
@@ -82,6 +83,7 @@ public class Edit_PersonalFragment extends Fragment implements View.OnClickListe
 
         String email=Home.canemail;
 
+//        et_email.setText(email);
 
         if (Util.isNetworkConnected(getActivity())) {
             getCandidateDetail(email);
@@ -114,76 +116,126 @@ public class Edit_PersonalFragment extends Fragment implements View.OnClickListe
 
     private void getCandidateDetail(final String email){
 
-        StringRequest stringRequest=new StringRequest(Request.Method.POST, getcandidatedetail, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                Log.d("checklog"," "+response);
-                try {
-                    JSONObject detailsObject=new JSONObject(response);
-                    JSONObject jsonObject=detailsObject.getJSONObject("CandidateDetails");
-                    String email=jsonObject.getString("email");
-                    String name=jsonObject.getString("name");
-                    String currentcity=jsonObject.getString("currentcity");
-                    String address=jsonObject.getString("address");
-                    String pincode=jsonObject.getString("pincode");
-                    String gender=jsonObject.getString("gender");
-                    String dob=jsonObject.getString("dob");
-                    String getdegree=jsonObject.getString("course");
-                    String getfos=jsonObject.getString("branch");
-                    String mobile=jsonObject.getString("mob");
+        RequestQueue requstQueue = Volley.newRequestQueue(getActivity());
+        Map<String,String> hashMap = new HashMap<String, String>();
+        hashMap.put("sessionId",GlobalDetails.sessionId);
 
-                    Calendar c=Calendar.getInstance();
-                    final int dd,mm,yy;
-                    dd=c.get(Calendar.DAY_OF_MONTH);
-                    mm=c.get(Calendar.MONTH);
-                    yy=c.get(Calendar.YEAR);
+        JsonObjectRequest jsonobj = new JsonObjectRequest(Request.Method.POST, GlobalDetails.mainUrl+"/Api/v1/User/Android/en/getupdateprofiledetails",new JSONObject(hashMap),
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
 
-                    if(dob.length()>4) {
-                        String[] date = dob.split("/");
-                        Log.d("logcheck", "hjfjf" + date[0] + date[1] + date[2]);
+                        try {
+                            JSONObject jsonObject=new JSONObject(response.toString());
+                            String success=jsonObject.getString("code");
+                            System.out.println(""+jsonObject);
+                            if(success.equals("S00"))
+                            {
 
-                        calculateAge(dd, mm, yy, Integer.parseInt(date[0]), Integer.parseInt(date[1]), Integer.parseInt(date[2]));
+                                String email = jsonObject.getJSONObject("details").getJSONObject("user").getJSONObject("userDetail").getString("email");
+                                String name = jsonObject.getJSONObject("details").getJSONObject("user").getJSONObject("userDetail").getString("name");
+                                String mobile = jsonObject.getJSONObject("details").getJSONObject("user").getJSONObject("userDetail").getString("mobileNo");
+                                et_email.setText(email);
+                                et_name.setText(name);
+                                et_mobile.setText(mobile);
+                                et_address.setText(jsonObject.getJSONObject("details").getString("address"));
+                                et_pincode.setText(jsonObject.getJSONObject("details").getString("pincode"));
+                                et_city.setText(jsonObject.getJSONObject("details").getString("city"));
+                                et_dob.setText(jsonObject.getJSONObject("details").getString("dob"));
+                                et_degree.setText(jsonObject.getJSONObject("details").getString("degree"));
+                                et_fos.setText(jsonObject.getJSONObject("details").getString("computer"));
+
+                            }
+                            else{
+                                addupdatedetails();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Log.d("logcheck",""+e);
+                            progressBar.setVisibility(View.GONE);
+
+                        }
                     }
-
-                    et_email.setText(email);
-                    et_name.setText(name);
-                    et_mobile.setText(mobile);
-                    et_address.setText(address);
-                    et_pincode.setText(pincode);
-                    et_city.setText(currentcity);
-                    et_dob.setText(dob);
-                    et_degree.setText(getdegree);
-                    et_fos.setText(getfos);
-
-                    if(gender.equals("Male"))
-                        radio_male.isChecked();
-                    else if (gender.equals("Female"))
-                        radio_female.isChecked();
-
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        progressBar.setVisibility(View.GONE);
+                        Log.d("logcheck",""+error);
+                    }
                 }
+        ){
 
-            }
-        }, new Response.ErrorListener() {
             @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.d("checklog"," "+error);
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String,String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/json; charset=UTF-8");
+                params.put("Authorization", "Basic c2VydmljZW1hbmR1OnNlcnZpY2VtYW5kdUAyMDIw");
+                return params;
             }
-        }){
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                HashMap<String,String> hashMap=new HashMap<>();
-                hashMap.put("email",email);
-                return hashMap;
-            }
+            //here I want to post data to sever
         };
-        Volley.newRequestQueue(getActivity()).add(stringRequest);
+        requstQueue.add(jsonobj);
+
     }
 
 
+    public void addupdatedetails()
+    {
+        RequestQueue requstQueue = Volley.newRequestQueue(getActivity());
+        Map<String,String> hashMap = new HashMap<String, String>();
+        hashMap.put("sessionId",GlobalDetails.sessionId);
+        JsonObjectRequest jsonobj = new JsonObjectRequest(Request.Method.POST, GlobalDetails.mainUrl+"/Api/v1/User/Android/en/GetUserDetails",new JSONObject(hashMap),
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+
+                        try {
+                            JSONObject jsonObject=new JSONObject(response.toString());
+                            String success=jsonObject.getString("code");
+                            if(success.equals("S00"))
+                            {
+
+                                String email = jsonObject.getJSONObject("details").getString("email");
+                                String name = jsonObject.getJSONObject("details").getString("name");
+                                String mobile = jsonObject.getJSONObject("details").getString("mobileNo");
+                                et_email.setText(email);
+                                et_name.setText(name);
+                                et_mobile.setText(mobile);
+
+                            }
+                            else{
+
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Log.d("logcheck",""+e);
+                            progressBar.setVisibility(View.GONE);
+
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        progressBar.setVisibility(View.GONE);
+                        Log.d("logcheck",""+error);
+                    }
+                }
+        ){
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String,String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/json; charset=UTF-8");
+                params.put("Authorization", "Basic c2VydmljZW1hbmR1OnNlcnZpY2VtYW5kdUAyMDIw");
+                return params;
+            }
+            //here I want to post data to sever
+        };
+
+        requstQueue.add(jsonobj);
+    }
 
     @Override
     public void onClick(View v) {
@@ -199,7 +251,8 @@ public class Edit_PersonalFragment extends Fragment implements View.OnClickListe
             String pincode=et_pincode.getText().toString();
             String city=et_city.getText().toString();
             String dob=et_dob.getText().toString();
-
+            String degree=et_degree.getText().toString();
+            String fos=et_fos.getText().toString();
             String gender=null;
             boolean bol=radio_male.isChecked();
             if(bol)
@@ -209,7 +262,7 @@ public class Edit_PersonalFragment extends Fragment implements View.OnClickListe
 
 
             if(Util.isNetworkConnected(getActivity())) {
-                editcandidateDetails(email, name, mobile, address, pincode, city, dob, gender);
+                editcandidateDetails(email, name, mobile, address, pincode, city, dob, gender,degree,fos);
             }
             else{
                 Toast toast=new Toast(getActivity());
@@ -242,57 +295,68 @@ public class Edit_PersonalFragment extends Fragment implements View.OnClickListe
 
     }
 
-    private void editcandidateDetails(final String email, final String name, final String mobile, final String address, final String pincode, final String city, final String dob, final String gender) {
+    private void editcandidateDetails(final String email, final String name, final String mobile, final String address, final String pincode, final String city, final String dob, final String gender,final String degree,final String fos) {
 
-        StringRequest stringRequest=new StringRequest(Request.Method.POST, editcandidate, new Response.Listener<String>() {
+         RequestQueue requstQueue = Volley.newRequestQueue(getActivity());
+        Map<String,String> hashMap = new HashMap<String, String>();
+        hashMap.put("sessionId",GlobalDetails.sessionId);
+        hashMap.put("address",address);
+        hashMap.put("pincode",pincode);
+        hashMap.put("city",city);
+        hashMap.put("gender",gender);
+        hashMap.put("dob",dob);
+        hashMap.put("degree",degree);
+        hashMap.put("feildofstudy",fos);
+
+
+        JsonObjectRequest jsonobj = new JsonObjectRequest(Request.Method.POST, GlobalDetails.mainUrl+"/Api/v1/User/Android/en/updateprofileofjob",new JSONObject(hashMap),
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+
+                        try {
+                            Toast toast=new Toast(getActivity());
+                            toast.setDuration(Toast.LENGTH_LONG);
+                            toast.setGravity(Gravity.BOTTOM|Gravity.FILL_HORIZONTAL,0,0);
+
+                            LayoutInflater inf=getActivity().getLayoutInflater();
+
+                            View layoutview=inf.inflate(R.layout.custom_toast,(ViewGroup)getActivity().findViewById(R.id.CustomToast_Parent));
+                            TextView tf=layoutview.findViewById(R.id.CustomToast);
+                            tf.setText("Details Updated Sucessfully "+ Html.fromHtml("&#x1f604;"));
+                            toast.setView(layoutview);
+                            toast.show();
+                            progressBar.setVisibility(View.GONE);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Log.d("logcheck",""+e);
+                            progressBar.setVisibility(View.GONE);
+
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d("checklog"," "+error);
+                        Toast.makeText(getActivity(), ""+error, Toast.LENGTH_SHORT).show();
+                        progressBar.setVisibility(View.GONE);
+                    }
+                }
+        ){
+
             @Override
-            public void onResponse(String response) {
-                Log.d("show"," "+response);
-                Log.d("show"," "+response);
-                Toast toast=new Toast(getActivity());
-                toast.setDuration(Toast.LENGTH_LONG);
-                toast.setGravity(Gravity.BOTTOM|Gravity.FILL_HORIZONTAL,0,0);
-
-                LayoutInflater inf=getActivity().getLayoutInflater();
-
-                View layoutview=inf.inflate(R.layout.custom_toast,(ViewGroup)getActivity().findViewById(R.id.CustomToast_Parent));
-                TextView tf=layoutview.findViewById(R.id.CustomToast);
-                tf.setText("Details Updated Sucessfully "+ Html.fromHtml("&#x1f604;"));
-                toast.setView(layoutview);
-                toast.show();
-                progressBar.setVisibility(View.GONE);
-
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String,String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/json; charset=UTF-8");
+                params.put("Authorization", "Basic c2VydmljZW1hbmR1OnNlcnZpY2VtYW5kdUAyMDIw");
+                return params;
             }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.d("checklog"," "+error);
-                Toast.makeText(getActivity(), ""+error, Toast.LENGTH_SHORT).show();
-                progressBar.setVisibility(View.GONE);
-            }
-        }){
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-
-                HashMap<String,String> hashMap=new HashMap<>();
-                hashMap.put("email",email);
-                hashMap.put("name",name);
-                hashMap.put("mobile",mobile);
-                hashMap.put("currentcity",city);
-                hashMap.put("address",address);
-                hashMap.put("pincode",pincode);
-                hashMap.put("gender",gender);
-                hashMap.put("dob",dob);
-                hashMap.put("poy"," ");
-                hashMap.put("percentage"," ");
-                hashMap.put("il"," ");
-                hashMap.put("iname"," ");
-                hashMap.put("uname"," ");
-
-                return hashMap;
-            }
+            //here I want to post data to sever
         };
-        Volley.newRequestQueue(getActivity()).add(stringRequest);
+
+        requstQueue.add(jsonobj);
     }
 
 
