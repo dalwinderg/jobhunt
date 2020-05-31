@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
-        android:background="@color/button"
+        android:background="@color/bluehead"
         android:orientation="horizontal">
 
         <ImageView
@@ -51,7 +51,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="About JobVibe"
+                android:text="About Looklock"
                 android:textColor="@color/bluehead"
                 android:textSize="@dimen/label"
                 android:textStyle="bold" />
@@ -60,7 +60,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
-                android:text="Job Vibe is one of the most innovative and huge online job portal in India. Founded in 2018, and since then, JobVibe has become a prominent name in the recruitment industry."
+                android:text="Job  is one of the most innovative and huge online job portal in India. Founded in 2018, and since then, Job has become a prominent name in the recruitment industry."
                 android:textColor="@color/black"
                 android:textSize="@dimen/label"/>
 
@@ -68,7 +68,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="          Job Vibe connects jobseekers and recruiters by accurately matching candidate profiles to the relevant job openings through an advanced 2-way matching technology. While most job portals only focus on getting candidates the next job, JobVibe focuses on the entire career growth of candidates. "
+                android:text="          Job  connects jobseekers and recruiters by accurately matching candidate profiles to the relevant job openings through an advanced 2-way matching technology. While most job portals only focus on getting candidates the next job, Job focuses on the entire career growth of candidates. "
                 android:textColor="@color/black"
                 android:textSize="@dimen/label"/>
 
@@ -76,7 +76,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="          As the industry shifts towards mobile, JobVibe is one of leading the transition and is the fastest growing job portal on mobile devices, witnessing a 100% YOY growth in mobile traffic and also offers on-the-go jobs through the JobVibe App. "
+                android:text="          As the industry shifts towards mobile, Job is one of leading the transition and is the fastest growing job portal on mobile devices, witnessing a 100% YOY growth in mobile traffic and also offers on-the-go jobs through the Job App. "
                 android:textColor="@color/black"
                 android:textSize="@dimen/label"/>
 
@@ -84,7 +84,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="          Job Vibe works closely to bridge the gap between talent and opportunities and offers end-to-end recruitment solutions.  Job Vibe brings candidates and top employers under one roof. "
+                android:text="          Job  works closely to bridge the gap between talent and opportunities and offers end-to-end recruitment solutions.  Job Vibe brings candidates and top employers under one roof. "
                 android:textColor="@color/black"
                 android:textSize="@dimen/label"/>
 
